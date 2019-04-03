@@ -13,6 +13,16 @@ Install from pip::
 
     pip3 install pyluxafor_mac
 
+Use as an API::
+
+    >>> from pyluxafor_mac import LuxaforFlag
+    >>> flag = LuxaforFlag()
+    >>> flag.fade(85, 205, 252)
+
+Use as a CLI::
+
+    $ pyluxafor_mac 247 168 184
+
 For development, clone from github and run the tests with::
 
     git clone https://github.com/CptSpaceToaster/pyluxafor_mac.git

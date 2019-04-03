@@ -49,26 +49,26 @@ class LuxaforFlag(object):
     def __del__(self):
         self.dev.close()
 
-    def set_static_color(self, r, g, b, led=255):
+    def static(self, r, g, b, led=255):
         self.dev.write([LuxaforFlag.MODE_STATIC_COLOUR, led, r, g, b])
 
-    def set_fade_color(self, r, g, b, led=255, duration=20):
+    def fade(self, r, g, b, led=255, duration=20):
         self.dev.write([LuxaforFlag.MODE_FADE_COLOUR, led, r, g, b, duration])
 
-    def set_strobe(self, r, g, b, led=255, duration=20, repeat=2):
+    def strobe(self, r, g, b, led=255, duration=20, repeat=2):
         self.dev.write([LuxaforFlag.MODE_STROBE, led, r, g, b, duration, 0, repeat])
 
-    def set_wave(self, r, g, b, wave_type=4, duration=20, repeat=1):
+    def wave(self, r, g, b, wave_type=4, duration=20, repeat=1):
         self.dev.write([LuxaforFlag.MODE_WAVE, wave_type, r, g, b, duration, 0, repeat])
 
-    def set_pattern(self, pattern_id, repeat=1):
+    def pattern(self, pattern_id, repeat=1):
         self.dev.write([LuxaforFlag.MODE_PATTERN, pattern_id, repeat])
 
     def off(self):
-        self.set_static_color(0, 0, 0)
+        self.static(0, 0, 0)
 
     def fade_off(self):
-        self.set_fade_color(0, 0, 0)
+        self.fade(0, 0, 0)
 
 
 def enumerateFlags():
@@ -93,7 +93,7 @@ def main():
             print('  {}: {} - {}'.format(idx, info['product_string'], info['manufacturer_string']))
     else:
         flag = LuxaforFlag(args.device)
-        flag.set_fade_color(args.red, args.green, args.blue)
+        flag.fade(args.red, args.green, args.blue)
 
 
 if __name__ == '__main__':
