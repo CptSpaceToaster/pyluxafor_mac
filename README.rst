@@ -4,7 +4,7 @@ pyluxafor_mac
 .. image:: https://img.shields.io/pypi/v/pyluxafor_mac.svg
     :target: https://pypi.python.org/pypi/pyluxafor_mac
 
-Generate representative image differences in a directory
+A Python3 api and cli for the LuxaforFlag for mac
 
 Installing pyluxafor_mac
 ========================

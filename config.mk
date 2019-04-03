@@ -14,6 +14,7 @@ VENV := venv
 VERSION := 3.7
 PYTHON := $(VENV)/bin/python$(VERSION)
 PIP := $(VENV)/bin/pip$(VERSION)
+TWINE := $(VENV)/bin/twine
 PIP_URL := https://bootstrap.pypa.io/get-pip.py
 
 # Internal Script Configuration

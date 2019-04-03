@@ -1,11 +1,9 @@
 #!/usr/bin/env python3.7
 
-# System
 import os
 import setuptools
+from pyluxafor_mac import __project__, __version__, DESCRIPTION, CLI
 
-# Local
-from pyluxafor_mac import __project__, __version__, CLI, DESCRIPTION
 
 if os.path.exists('README.rst'):
     README = open('README.rst').read()

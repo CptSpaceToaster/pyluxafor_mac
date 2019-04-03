@@ -1,7 +1,5 @@
-#!/usr/bin/env python3
-
+import argparse
 import hid
-import time
 
 
 class LuxaforFlag(object):
@@ -38,12 +36,15 @@ class LuxaforFlag(object):
     PATTERN_RANDOM5 = 7
     PATTERN_RAINBOWWAVE = 8
 
-    def __init__(self):
+    def __init__(self, idx=0):
+        infos = enumerateFlags()
+        try:
+            info = infos[idx]
+        except IndexError:
+            raise Exception('Device {} not found. There were {} candidates.'.format(idx, len(infos)))
+        
         self.dev = hid.device()
-        self.dev.open(
-            LuxaforFlag.DEVICE_VENDOR_ID, 
-            LuxaforFlag.DEVICE_PRODUCT_ID
-        )
+        self.dev.open_path(info['path'])
 
     def __del__(self):
         self.dev.close()
@@ -63,23 +64,36 @@ class LuxaforFlag(object):
     def set_pattern(self, pattern_id, repeat=1):
         self.dev.write([LuxaforFlag.MODE_PATTERN, pattern_id, repeat])
 
+    def off(self):
+        self.set_static_color(0, 0, 0)
+
     def fade_off(self):
         self.set_fade_color(0, 0, 0)
 
 
+def enumerateFlags():
+    return sorted(hid.enumerate(
+        LuxaforFlag.DEVICE_VENDOR_ID, 
+        LuxaforFlag.DEVICE_PRODUCT_ID
+    ), key=lambda x: x['path'])
+
+
 def main():
-    flag = LuxaforFlag()
-    flag.fade_off()
-    time.sleep(1)
-    flag.set_fade_color(200, 0, 0)
-    time.sleep(1)
-    flag.set_fade_color(200, 150, 0)
-    time.sleep(1)
-    flag.set_fade_color(0, 200, 0)
-    time.sleep(1)
-    flag.fade_off()
-    time.sleep(1)
-    flag.set_pattern(LuxaforFlag.PATTERN_RANDOM1, repeat=3)
+    parser = argparse.ArgumentParser(description='CLI for the LuxaforFlag for mac')
+    parser.add_argument('red', default=255, nargs='?', type=int, help='red   0-255')
+    parser.add_argument('green', default=255, nargs='?', type=int, help='green 0-255')
+    parser.add_argument('blue', default=255, nargs='?', type=int, help='blue  0-255')
+    parser.add_argument('-d', '--device', default=0, type=int, help='device index (default 0)')
+    parser.add_argument('-l', '--list', action='store_true', help='list connected devices')
+    args = parser.parse_args()
+
+    if args.list:
+        print('Connected devices:')
+        for idx, info in enumerate(enumerateFlags()):
+            print('  {}: {} - {}'.format(idx, info['product_string'], info['manufacturer_string']))
+    else:
+        flag = LuxaforFlag(args.device)
+        flag.set_fade_color(args.red, args.green, args.blue)
 
 
 if __name__ == '__main__':

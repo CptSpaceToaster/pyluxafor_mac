@@ -5,11 +5,10 @@ help:
 	@printf "  help                          Display this message."\\n
 	@printf "  check-tools                   Check if this user has required build tools in its PATH."\\n
 	@printf "  test                          Run some tests!"\\n
+	@printf "  install                       Install pyluxafor_mac locally!"\\n
 	@printf "  clean-all                     Clean everything!"\\n
 	@printf "  %-30s" "clean-$(VENV)"
 	@printf "Clean the virtual environment, and start anew."\\n
-	@printf "  clean-hooks                   Clean and uninstall the git-hooks"\\n
-	@printf "  clean-pycache                 Clean up python's compiled bytecode objects in the package"\\n
 
 ################################################################################
 include config.mk
@@ -36,6 +35,9 @@ $(VENV) $(PYTHON):
 $(PIP): $(PYTHON)
 	wget $(PIP_URL) -O - | $(PYTHON)
 
+$(TWINE): $(PYTHON) $(PIP)
+	$(PIP) install twine
+
 # This creates a dotfile for the requirements, indicating that they were installed
 .$(REQUIREMENTS): $(PIP) $(REQUIREMENTS)
 	test -s $(REQUIREMENTS) && $(PIP) install -Ur $(REQUIREMENTS) || :
@@ -52,44 +54,46 @@ test: $(PYTHON) .$(REQUIREMENTS)
 list-sources:
 	@printf "$(SOURCES)"\\n
 
-.PHONY: build
-build: .build
-.build: $(PYTHON) .$(REQUIREMENTS) $(SOURCES) setup.py
-	$(PYTHON) setup.py build
-	touch .build
+.PHONY: dist
+dist: dist/$(PACKAGE)-*.tar.gz
+dist/$(PACKAGE)-*.tar.gz: $(PYTHON) .$(REQUIREMENTS) $(SOURCES) setup.py
+	$(PYTHON) setup.py sdist
 
 .PHONY: install
 install: .install
-.install: .build
+.install: dist/$(PACKAGE)-*.tar.gz
+	pip$(VERSION) install $^
 	$(PYTHON) setup.py install
 	touch .install
-	@printf "Installed locally in "$(GRN)$(VENV)"/bin/"$(NC)\\n
 
-.PHONY: register
-register: .register
-.register: $(PYTHON) .$(REQUIREMENTS) $(SOURCES) setup.py
-	$(PYTHON) setup.py register --strict
-	touch .register
+.PHONY: upload-test
+upload-test: .upload-test
+.upload-test: $(TWINE) dist/$(PACKAGE)-*.tar.gz
+	$(TWINE) upload --repository-url https://test.pypi.org/legacy/ dist/*
+	touch .upload-test
 
-.PHONY: upload
-upload: .upload
-.upload: .build .register $(PYTHON) .$(REQUIREMENTS) $(SOURCES) setup.py
-	$(PYTHON) setup.py sdist upload
-	$(PYTHON) setup.py bdist_wheel upload
-	touch .upload
+.PHONY: release
+release: .release
+.release: .upload-test $(TWINE) dist/$(PACKAGE)-*.tar.gz
+	$(TWINE) upload dist/*
+	touch .release
 
 ######### Cleaning supplies #########
 .PHONY: clean
 clean:
-ifneq ("$(wildcard .build)","")
+ifneq ("$(wildcard .dist)","")
 	$(PYTHON) setup.py clean
 endif
-	rm -rf .build
+	rm -rf .dist
 	rm -rf .install
-	rm -rf .upload
+	rm -rf .upload-test
+	rm -rf .release
+	rm -rf dist
+	rm -rf build
+	rm -rf *egg-info
 
 .PHONY: clean-all
-clean-all: clean clean-$(VENV) clean-hooks clean-pycache
+clean-all: clean clean-$(VENV) clean-hooks
 
 .PHONY: clean-$(VENV)
 clean-$(VENV):
@@ -99,8 +103,3 @@ clean-$(VENV):
 .PHONY: clean-hooks
 clean-hooks:
 	rm -rf $(GIT_HOOKS)
-
-.PHONY: clean-pycache
-clean-pycache:
-	find -path "*/__pycache__/*" -not -path "*/venv/*" -delete
-	find -name "__pycache__" -not -path "*/venv/*" -type d -delete

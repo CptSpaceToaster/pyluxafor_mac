@@ -8,12 +8,13 @@
 # Marker Files
 .hooks
 .requirements.txt
-.build
+.dist
 .install
-.register
-.upload
+.upload-test
+.release
 
 # Uneeded Directories
 venv
 build
 dist
+.vscode
