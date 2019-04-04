@@ -13,6 +13,9 @@ Install from pip::
 
     pip3 install pyluxafor_mac
 
+Usage
+=====
+
 Use as an API::
 
     >>> from pyluxafor_mac import LuxaforFlag
@@ -21,17 +24,14 @@ Use as an API::
 
 Use as a CLI::
 
+    $ pyluxafor_mac -h
     $ pyluxafor_mac 247 168 184
+
+Contribution
+============
 
 For development, clone from github and run the tests with::
 
     git clone https://github.com/CptSpaceToaster/pyluxafor_mac.git
     cd pyluxafor_mac
-    make test
-
-Usage
-=====
-
-Help::
-
-    pyluxafor_mac -h
+    make install
